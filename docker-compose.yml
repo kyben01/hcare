@@ -1,0 +1,60 @@
+version: '2'
+services:
+  web:
+      container_name: mynginx
+      image: nginx:latest
+      ports:
+          - "80:80"
+          - "81:81"
+      volumes:
+          - /c/Users/kyben/Desktop/mydocker/project/src/hcarewebv1:/site
+          - /c/Users/kyben/Desktop/mydocker/project/src/hcareapiv1:/api
+          - /c/Users/kyben/Desktop/mydocker/project/conf:/etc/nginx/conf.d
+      links:
+          - site
+          - api
+
+  site:
+      container_name: hcare-web
+      image: php/phalcon:5.6.30
+      volumes:
+          - /c/Users/kyben/Desktop/mydocker/project/src/hcarewebv1:/site
+
+  api:
+      image: php/phalcon:5.6.30
+      volumes:
+          - /c/Users/kyben/Desktop/mydocker/project/src/hcareapiv1:/api
+      depends_on:
+       - mysql
+
+  mysql:
+      container_name: mysqlserver
+      image: mysql:latest
+      restart: always
+      environment:
+        - MYSQL_ROOT_PASSWORD=root
+      # networks:
+      #   static-network:
+      #     ipv4_address: 172.20.128.1
+      volumes:
+        - /host/dir:/var/lib/mysql
+  phpmyadmin:
+      container_name: phpmyadmin
+      image: phpmyadmin/phpmyadmin
+      restart: always
+      environment:
+        - PMA_ARBITRARY=1
+      ports:
+        - '8085:80'
+      # networks:
+      #   static-network:
+      #     ipv4_address: 172.20.128.2
+      volumes:
+        - /sessions
+
+networks:
+  static-network:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          ip_range: 172.28.5.0/24
